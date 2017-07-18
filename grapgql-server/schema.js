@@ -1,62 +1,70 @@
+
 const typeDefs = `
-  type Author {
-    id: Int!
-    firstName: String
-    lastName: String
-    posts: [Post] # the list of Posts by this author
-  }
-  type Post {
+  type Article {
     id: Int!
     title: String
-    author: Author
-    votes: Int
+    content: String
+    tags: [Tag] # the list of Tags by this article
+  }
+  type Tag {
+    article_id: Int!
+    tag_name: String
+    article: Article
   }
   # the schema allows the following query:
   type Query {
-    posts: [Post]
-    author(id: Int!): Author
+    tags: [Tag]
+    article(id: Int!): Article
   }
   # this schema allows the following mutation:
   type Mutation {
-    upvotePost (
-      postId: Int!
-    ): Post
+    modifyContent (
+      id: Int!,
+      content: String!
+    ): Article
   }
 `;
 
-const { find, filter } = require('lodash');
-// example data
-const authors = [
-  { id: 1, firstName: 'Tom', lastName: 'Coleman' },
-  { id: 2, firstName: 'Sashko', lastName: 'Stubailo' },
-  { id: 3, firstName: 'Mikhail', lastName: 'Novikov' },
+let articles = [
+  { id: 111, title: 'title111', content: 'content111' },
+  { id: 222, title: 'title222', content: 'content222' },
+  { id: 333, title: 'title333', content: 'content333' },
 ];
-const posts = [
-  { id: 1, authorId: 1, title: 'Introduction to GraphQL', votes: 2 },
-  { id: 2, authorId: 2, title: 'Welcome to Meteor', votes: 3 },
-  { id: 3, authorId: 2, title: 'Advanced GraphQL', votes: 1 },
-  { id: 4, authorId: 3, title: 'Launchpad is Cool', votes: 7 },
+
+let tags = [
+  {article_id: 111,tag_name: 'aaa'},
+  {article_id: 222,tag_name: 'bbb'},
+  {article_id: 333,tag_name: 'ccc'}
 ];
+
 const resolvers = {
   Query: {
-    posts: () => posts,
-    author: (_, { id }) => find(authors, { id: id }),
-  },
-  Mutation: {
-    upvotePost: (_, { postId }) => {
-      const post = find(posts, { id: postId });
-      if (!post) {
-        throw new Error(`Couldn't find post with id ${postId}`);
-      }
-      post.votes += 1;
-      return post;
+    tags: () => {
+      return tags;
+    },
+    article: (_, { id }) => {
+      return articles.find(v => v.id === id)
     },
   },
-  Author: {
-    posts: (author) => filter(posts, { authorId: author.id }),
+  Mutation: {
+    modifyContent: (_, { id, content }) => {
+      console.log(id, content)
+      let article = articles.find(v => v.id === id);
+      if (!article) throw new Error(`Couldn't find article with id ${id}`);
+
+      article.content = content;
+      return article;
+    },
   },
-  Post: {
-    author: (post) => find(authors, { id: post.authorId }),
+  Article: {
+    tags: (article) => {
+      return tags.filter(v => v.article_id === article.id)
+    },
+  },
+  Tag: {
+    article: (tag) => {
+      return articles.find(v => v.id === tag.article_id)
+    },
   },
 };
 
