@@ -1,7 +1,7 @@
 <template>
   <div class="apollo">
     <h3>Hello</h3>
-    <p>{{ article }}</p>
+    <!-- <p>{{ article }}</p>
     <p> -------------------------  </p>
     <p v-for="item of tags">
       {{item}}
@@ -13,65 +13,68 @@
     <div>
       <input type="text" v-model="newContent" />
       <button @click="updateArticle">更新article</button>
-    </div>
+    </div> -->
+    <p>
+      {{user}}
+    </p>
+    <button @click="getUser">获取user</button>
   </div>
 </template>
 
 <script>
 import gql from 'graphql-tag'
 
-const queryTags = gql`query tags {
-  tags {
-    article_id
-    tag_name
-    article {
-      title
-      content
-    }
-  }
-}`;
-
-const mutationArticle = `mutation update {
-  modifyContent(
-    id: 1 
-    content: 'hahahahaha'
-  ) {
-    id
-    title
-    content
-  }
-}`;
-
 export default {
   name: 'hello',
   data () {
     return {
-      article: '',
-      tags: [],
-      newContent: ''
+      user: ''
     }
   },
-  apollo: {
-    tags: queryTags,
-    // article: {
-    //   // gql query
-    //   query: gql`query article($id: Int!) {
-    //     article(id: $id) {
-    //       id 
-    //       title
-    //       content
-    //       tags {
-    //         tag_name
-    //       }
-    //     }
-    //   }`,
-    //   // Static parameters
-    //   variables: {
-    //     id: 111,
-    //   },
-    // },
-  },
   methods: {
+    getUser() {
+      this.$apollo.query({
+        // Query
+        query: gql`query user($id: Int!) {
+          user(id: $id) {
+            id
+            nickName
+            email
+            mobile
+            avatar
+            manager
+            creatAt
+            updateAt
+            articles {
+              id
+              userId
+              title
+              content
+              readCount
+              creatAt
+              updateAt
+              comments {
+                id
+                userId
+                articleId
+                content
+                creatAt
+                updateAt
+              }
+            }
+          }
+        }`,
+        // Static parameters
+        variables: {
+          id: 11,
+        },
+      }).then((obj) => {
+        console.log(obj);
+        this.user = obj.data.user;
+      }).catch((error) => {
+        console.error(error);
+      });
+    },
     getArticle() {
       this.$apollo.query({
         // Query
