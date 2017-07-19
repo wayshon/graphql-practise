@@ -23,6 +23,8 @@ const comments = [
  * 上面是假数据，明天换成接口
  */
 
+const fetch = require('node-fetch');
+
 const User = require('./User');
 const Article = require('./Article');
 const Comment = require('./Comment');
@@ -52,7 +54,11 @@ const typeDefs = [SchemaDefinition, RootQuery, User, Article, Comment];
 
 const resolvers = {
   Query: {
-    user: (_, { id }) => {
+    user: async (_, { id }) => {
+      
+      let data = await fetch('https://api.github.com/users/github');
+      let json = data.json();
+      console.log(json)
       return users.find(v => v.id === id)
     },
     article: (_, { id }) => {

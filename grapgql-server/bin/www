@@ -22,6 +22,33 @@ var port = normalizePort(process.env.PORT || '3000');
 var server = http.createServer(app.callback());
 
 /**
+ * graphql ws Subs
+ */
+const { SubscriptionServer } = require('subscriptions-transport-ws');
+const { execute, subscribe } = require('graphql');
+
+const schema = require('../schema');
+
+const SUBSCRIPTIONS_PATH = '/subscriptions';
+
+server.listen(port, () => {
+  console.log(`API Server is now running on http://localhost:${port}/graphql`)
+  console.log(`API Subscriptions server is now running on ws://localhost:${port}${SUBSCRIPTIONS_PATH}`)
+});
+
+const subscriptionServer = SubscriptionServer.create(
+  {
+    schema,
+    execute,
+    subscribe,
+  },
+  {
+    server,
+    path: SUBSCRIPTIONS_PATH,
+  },
+);
+
+/**
  * Listen on provided port, on all network interfaces.
  */
 
